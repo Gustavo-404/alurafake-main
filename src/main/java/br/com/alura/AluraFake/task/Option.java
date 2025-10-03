@@ -24,9 +24,12 @@ public class Option {
     @Deprecated
     public Option() {}
 
-    public Option(String text, boolean isCorrect, Task task) {
+    public Option(String text, boolean isCorrect) {
         this.text = text;
         this.isCorrect = isCorrect;
+    }
+
+    void setTask(Task task) {
         this.task = task;
     }
 

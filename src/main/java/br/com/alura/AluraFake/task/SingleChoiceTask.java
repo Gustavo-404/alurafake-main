@@ -20,7 +20,10 @@ public class SingleChoiceTask extends Task {
 
     public SingleChoiceTask(Course course, String statement, int order, List<Option> options) {
         super(course, statement, order);
+
         validateOptions(options);
+        options.forEach(option -> option.setTask(this));
+
         this.options = options;
     }
 
