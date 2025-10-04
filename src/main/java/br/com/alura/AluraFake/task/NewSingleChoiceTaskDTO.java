@@ -42,4 +42,20 @@ public class NewSingleChoiceTaskDTO {
     public List<NewOptionDTO> getOptions() {
         return options;
     }
+
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
+    }
+
+    public void setStatement(String statement) {
+        this.statement = statement;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
+
+    public void setOptions(List<NewOptionDTO> options) {
+        this.options = options;
+    }
 }

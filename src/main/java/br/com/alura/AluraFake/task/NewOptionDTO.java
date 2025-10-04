@@ -20,4 +20,12 @@ public class NewOptionDTO {
     public Boolean getIsCorrect() {
         return isCorrect;
     }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setIsCorrect(Boolean correct) {
+        isCorrect = correct;
+    }
 }

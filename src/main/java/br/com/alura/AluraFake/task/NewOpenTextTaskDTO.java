@@ -29,4 +29,16 @@ public class NewOpenTextTaskDTO {
     public Integer getOrder() {
         return order;
     }
+
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
+    }
+
+    public void setStatement(String statement) {
+        this.statement = statement;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
 }
