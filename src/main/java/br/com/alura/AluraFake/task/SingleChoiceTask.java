@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "Task")
@@ -33,5 +35,11 @@ public class SingleChoiceTask extends Task {
 
         long correctOptionsCount = options.stream().filter(Option::isCorrect).count();
         Assert.isTrue(correctOptionsCount == 1, "A atividade de alternativa única deve ter exatamente uma alternativa correta.");
+
+        Set<String> optionTexts = new HashSet<>();
+        for (Option option : options) {
+            Assert.isTrue(!option.getText().equalsIgnoreCase(getStatement()), "A alternativa não pode ser igual ao enunciado.");
+            Assert.isTrue(optionTexts.add(option.getText()), "As alternativas não podem ser iguais entre si.");
+        }
     }
 }

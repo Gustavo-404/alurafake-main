@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "Task")
@@ -36,5 +38,11 @@ public class MultipleChoiceTask extends Task {
 
         long incorrectOptionsCount = options.size() - correctOptionsCount;
         Assert.isTrue(incorrectOptionsCount >= 1, "A atividade de múltipla escolha deve ter ao menos uma alternativa incorreta.");
+
+        Set<String> optionTexts = new HashSet<>();
+        for (Option option : options) {
+            Assert.isTrue(!option.getText().equalsIgnoreCase(getStatement()), "A alternativa não pode ser igual ao enunciado.");
+            Assert.isTrue(optionTexts.add(option.getText()), "As alternativas não podem ser iguais entre si.");
+        }
     }
 }
