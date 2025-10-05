@@ -59,8 +59,11 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].field", containsInAnyOrder("statement", "statement")))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder("must not be blank", "length must be between 4 and 255")));
+                .andExpect(jsonPath("$.status").value("Bad Request"))
+                .andExpect(jsonPath("$.errors", containsInAnyOrder(
+                        "Field 'statement': must not be blank",
+                        "Field 'statement': length must be between 4 and 255"
+                )));
     }
 
     @Test
@@ -74,12 +77,10 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].field").value("courseId"))
-                .andExpect(jsonPath("$[0].message").value("must not be null"));
+                .andExpect(jsonPath("$.status").value("Bad Request"))
+                .andExpect(jsonPath("$.errors[0]").value("Field 'courseId': must not be null"));
     }
 
-
-    // Testes para /task/new/singlechoice
     @Test
     void newSingleChoiceTask__should_return_created_when_request_is_valid() throws Exception {
         NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
@@ -120,8 +121,8 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].field").value("options"))
-                .andExpect(jsonPath("$[0].message").value("size must be between 2 and 5"));
+                .andExpect(jsonPath("$.status").value("Bad Request"))
+                .andExpect(jsonPath("$.errors[0]").value("Field 'options': size must be between 2 and 5"));
     }
 
     @Test
@@ -142,12 +143,12 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].field", containsInAnyOrder("options[0].text", "options[0].text")))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder("must not be blank", "length must be between 4 and 80")));
+                .andExpect(jsonPath("$.errors", containsInAnyOrder(
+                        "Field 'options[0].text': must not be blank",
+                        "Field 'options[0].text': length must be between 4 and 80"
+                )));
     }
 
-
-    // Testes para /task/new/multiplechoice
     @Test
     void newMultipleChoiceTask__should_return_created_when_request_is_valid() throws Exception {
         NewMultipleChoiceTaskDTO dto = new NewMultipleChoiceTaskDTO();
@@ -200,7 +201,7 @@ public class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].field").value("options"))
-                .andExpect(jsonPath("$[0].message").value("size must be between 3 and 5"));
+                .andExpect(jsonPath("$.status").value("Bad Request"))
+                .andExpect(jsonPath("$.errors[0]").value("Field 'options': size must be between 3 and 5"));
     }
 }

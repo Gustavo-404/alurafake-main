@@ -3,6 +3,7 @@ package br.com.alura.AluraFake.task;
 import br.com.alura.AluraFake.course.Course;
 import br.com.alura.AluraFake.course.CourseRepository;
 import br.com.alura.AluraFake.course.Status;
+import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class TaskService {
 
     private Course prepareTaskCreation(Long courseId, Integer order, String statement) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("Curso não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Curso não encontrado"));
 
         if (course.getStatus() != Status.BUILDING) {
             throw new IllegalStateException("Só é possível adicionar atividades em cursos com status BUILDING");
