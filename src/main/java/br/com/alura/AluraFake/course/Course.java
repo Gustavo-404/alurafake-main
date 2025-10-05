@@ -1,8 +1,8 @@
 package br.com.alura.AluraFake.course;
 
 import br.com.alura.AluraFake.user.User;
+import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import jakarta.persistence.*;
-import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +25,9 @@ public class Course {
     public Course(){}
 
     public Course(String title, String description, User instructor) {
-        Assert.isTrue(instructor.isInstructor(), "Usuario deve ser um instrutor");
+        if (!instructor.isInstructor()) {
+            throw new BusinessRuleException("Usuario deve ser um instrutor");
+        }
         this.title = title;
         this.instructor = instructor;
         this.description = description;

@@ -1,6 +1,5 @@
 package br.com.alura.AluraFake.util.exception;
 
-import org.springframework.util.Assert;
 import org.springframework.validation.FieldError;
 
 public class ErrorItemDTO {
@@ -13,10 +12,12 @@ public class ErrorItemDTO {
     }
 
     public ErrorItemDTO(String field, String message) {
-        Assert.notNull(field, "field description must not be null");
-        Assert.isTrue(!field.isEmpty(), "field description must not be null");
-        Assert.notNull(message, "message description must not be null");
-        Assert.isTrue(!message.isEmpty(), "message description must not be null");
+        if (field == null || field.isBlank()) {
+            throw new IllegalArgumentException("O campo 'field' não pode ser nulo ou vazio ao criar um ErrorItemDTO.");
+        }
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException("O campo 'message' não pode ser nulo ou vazio ao criar um ErrorItemDTO.");
+        }
         this.field = field;
         this.message = message;
     }

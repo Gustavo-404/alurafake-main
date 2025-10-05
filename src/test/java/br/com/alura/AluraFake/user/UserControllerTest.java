@@ -40,7 +40,7 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("Bad Request"))
                 .andExpect(jsonPath("$.errors", containsInAnyOrder(
-                        "Field 'email': must not be blank"
+                        "Campo 'email': must not be blank"
                 )));
     }
 
@@ -56,7 +56,7 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(newUserDTO)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("Bad Request"))
-                .andExpect(jsonPath("$.errors[0]").value("Field 'email': must be a well-formed email address"));
+                .andExpect(jsonPath("$.errors[0]").value("Campo 'email': must be a well-formed email address"));
     }
 
     @Test
@@ -72,8 +72,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUserDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.field").value("email"))
-                .andExpect(jsonPath("$.message").value("Email já cadastrado no sistema"));
+                .andExpect(jsonPath("$.errors[0]").value("Email já cadastrado no sistema"));
     }
 
     @Test

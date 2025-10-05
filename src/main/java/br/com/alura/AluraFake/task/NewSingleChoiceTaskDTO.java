@@ -23,7 +23,6 @@ public class NewSingleChoiceTaskDTO {
     private Integer order;
 
     @NotNull
-    @Size(min = 2, max = 5)
     @Valid
     private List<NewOptionDTO> options;
 

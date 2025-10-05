@@ -1,6 +1,7 @@
 package br.com.alura.AluraFake.course;
 
 import br.com.alura.AluraFake.user.*;
+import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ErrorItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,18 +28,14 @@ public class CourseController {
     public ResponseEntity createCourse(@Valid @RequestBody NewCourseDTO newCourse) {
 
         //Caso implemente o bonus, pegue o instrutor logado
-        Optional<User> possibleAuthor = userRepository
+        User instructor = userRepository
                 .findByEmail(newCourse.getEmailInstructor())
-                .filter(User::isInstructor);
+                .filter(User::isInstructor)
+                .orElseThrow(() -> new BusinessRuleException("Usuário não encontrado ou não é um instrutor"));
 
-        if(possibleAuthor.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("emailInstructor", "Usuário não é um instrutor"));
-        }
-
-        Course course = new Course(newCourse.getTitle(), newCourse.getDescription(), possibleAuthor.get());
-
+        Course course = new Course(newCourse.getTitle(), newCourse.getDescription(), instructor);
         courseRepository.save(course);
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

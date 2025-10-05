@@ -1,5 +1,6 @@
 package br.com.alura.AluraFake.user;
 
+import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ErrorItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
@@ -21,8 +22,7 @@ public class UserController {
     @PostMapping("/user/new")
     public ResponseEntity newStudent(@RequestBody @Valid NewUserDTO newUser) {
         if(userRepository.existsByEmail(newUser.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("email", "Email já cadastrado no sistema"));
+            throw new BusinessRuleException("Email já cadastrado no sistema");
         }
         User user = newUser.toModel();
         userRepository.save(user);

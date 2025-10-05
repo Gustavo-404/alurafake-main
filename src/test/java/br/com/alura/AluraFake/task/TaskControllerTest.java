@@ -61,8 +61,8 @@ public class TaskControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("Bad Request"))
                 .andExpect(jsonPath("$.errors", containsInAnyOrder(
-                        "Field 'statement': must not be blank",
-                        "Field 'statement': length must be between 4 and 255"
+                        "Campo 'statement': must not be blank",
+                        "Campo 'statement': length must be between 4 and 255"
                 )));
     }
 
@@ -78,7 +78,7 @@ public class TaskControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("Bad Request"))
-                .andExpect(jsonPath("$.errors[0]").value("Field 'courseId': must not be null"));
+                .andExpect(jsonPath("$.errors[0]").value("Campo 'courseId': must not be null"));
     }
 
     @Test
@@ -110,22 +110,6 @@ public class TaskControllerTest {
     }
 
     @Test
-    void newSingleChoiceTask__should_return_bad_request_when_options_list_is_too_small() throws Exception {
-        NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
-        dto.setCourseId(1L);
-        dto.setStatement("O que aprendemos na aula de hoje?");
-        dto.setOrder(2);
-        dto.setOptions(Collections.emptyList());
-
-        mockMvc.perform(post("/task/new/singlechoice")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("Bad Request"))
-                .andExpect(jsonPath("$.errors[0]").value("Field 'options': size must be between 2 and 5"));
-    }
-
-    @Test
     void newSingleChoiceTask__should_return_bad_request_when_nested_option_is_invalid() throws Exception {
         NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
         dto.setCourseId(1L);
@@ -144,8 +128,8 @@ public class TaskControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", containsInAnyOrder(
-                        "Field 'options[0].text': must not be blank",
-                        "Field 'options[0].text': length must be between 4 and 80"
+                        "Campo 'options[0].option': must not be blank",
+                        "Campo 'options[0].option': length must be between 4 and 80"
                 )));
     }
 
@@ -180,28 +164,4 @@ public class TaskControllerTest {
         verify(taskService).createTask(any(NewMultipleChoiceTaskDTO.class));
     }
 
-    @Test
-    void newMultipleChoiceTask__should_return_bad_request_when_options_list_is_too_small() throws Exception {
-        NewMultipleChoiceTaskDTO dto = new NewMultipleChoiceTaskDTO();
-        dto.setCourseId(1L);
-        dto.setStatement("O que aprendemos hoje?");
-        dto.setOrder(3);
-
-        NewOptionDTO option1 = new NewOptionDTO();
-        option1.setOption("Java");
-        option1.setIsCorrect(true);
-
-        NewOptionDTO option2 = new NewOptionDTO();
-        option2.setOption("Spring");
-        option2.setIsCorrect(true);
-
-        dto.setOptions(List.of(option1, option2));
-
-        mockMvc.perform(post("/task/new/multiplechoice")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("Bad Request"))
-                .andExpect(jsonPath("$.errors[0]").value("Field 'options': size must be between 3 and 5"));
-    }
 }

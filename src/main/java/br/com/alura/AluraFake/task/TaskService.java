@@ -3,6 +3,7 @@ package br.com.alura.AluraFake.task;
 import br.com.alura.AluraFake.course.Course;
 import br.com.alura.AluraFake.course.CourseRepository;
 import br.com.alura.AluraFake.course.Status;
+import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,16 +60,16 @@ public class TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Curso não encontrado"));
 
         if (course.getStatus() != Status.BUILDING) {
-            throw new IllegalStateException("Só é possível adicionar atividades em cursos com status BUILDING");
+            throw new BusinessRuleException("Só é possível adicionar atividades em cursos com status BUILDING");
         }
 
         if (taskRepository.existsByCourseIdAndStatement(course.getId(), statement)) {
-            throw new IllegalArgumentException("O curso já possui uma atividade com este enunciado.");
+            throw new BusinessRuleException("O curso já possui uma atividade com este enunciado.");
         }
 
         boolean isOrderGreaterThanLast = !taskRepository.existsByCourseIdAndOrder(course.getId(), order - 1) && order > 1;
         if(isOrderGreaterThanLast) {
-            throw new IllegalStateException("A ordem das atividades deve ser contínua, sem saltos.");
+            throw new BusinessRuleException("A ordem das atividades deve ser contínua, sem saltos.");
         }
 
         if (taskRepository.existsByCourseIdAndOrder(course.getId(), order)) {

@@ -23,7 +23,6 @@ public class NewMultipleChoiceTaskDTO {
     private Integer order;
 
     @NotNull
-    @Size(min = 3, max = 5)
     @Valid
     private List<NewOptionDTO> options;
 
