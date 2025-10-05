@@ -89,13 +89,13 @@ public class TaskControllerTest {
 
         dto.setOrder(2);
         NewOptionDTO option1 = new NewOptionDTO();
-        option1.setText("Java");
+        option1.setOption("Java");
         option1.setIsCorrect(true);
         NewOptionDTO option2 = new NewOptionDTO();
-        option2.setText("Python");
+        option2.setOption("Python");
         option2.setIsCorrect(false);
         NewOptionDTO option3 = new NewOptionDTO();
-        option3.setText("Ruby");
+        option3.setOption("Ruby");
         option3.setIsCorrect(false);
         dto.setOptions(List.of(option1, option2, option3));
 
@@ -132,10 +132,10 @@ public class TaskControllerTest {
         dto.setStatement("O que aprendemos na aula de hoje?");
         dto.setOrder(2);
         NewOptionDTO option1 = new NewOptionDTO();
-        option1.setText("");
+        option1.setOption("");
         option1.setIsCorrect(true);
         NewOptionDTO option2 = new NewOptionDTO();
-        option2.setText("Java");
+        option2.setOption("Java");
         option2.setIsCorrect(false);
         dto.setOptions(List.of(option1, option2));
 
@@ -157,15 +157,15 @@ public class TaskControllerTest {
         dto.setOrder(2);
 
         NewOptionDTO option1 = new NewOptionDTO();
-        option1.setText("Java");
+        option1.setOption("Java");
         option1.setIsCorrect(true);
 
         NewOptionDTO option2 = new NewOptionDTO();
-        option2.setText("Spring");
+        option2.setOption("Spring");
         option2.setIsCorrect(true);
 
         NewOptionDTO option3 = new NewOptionDTO();
-        option3.setText("Ruby");
+        option3.setOption("Ruby");
         option3.setIsCorrect(false);
 
         dto.setOptions(List.of(option1, option2, option3));
@@ -188,11 +188,11 @@ public class TaskControllerTest {
         dto.setOrder(3);
 
         NewOptionDTO option1 = new NewOptionDTO();
-        option1.setText("Java");
+        option1.setOption("Java");
         option1.setIsCorrect(true);
 
         NewOptionDTO option2 = new NewOptionDTO();
-        option2.setText("Spring");
+        option2.setOption("Spring");
         option2.setIsCorrect(true);
 
         dto.setOptions(List.of(option1, option2));

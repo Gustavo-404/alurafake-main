@@ -8,21 +8,21 @@ public class NewOptionDTO {
 
     @NotBlank
     @Length(min = 4, max = 80)
-    private String text;
+    private String option;
 
     @NotNull
     private Boolean isCorrect;
 
-    public String getText() {
-        return text;
+    public String getOption() {
+        return option;
     }
 
     public Boolean getIsCorrect() {
         return isCorrect;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setOption(String option) {
+        this.option = option;
     }
 
     public void setIsCorrect(Boolean correct) {

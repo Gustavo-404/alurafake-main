@@ -33,7 +33,7 @@ public class TaskService {
         Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
 
         List<Option> options = dto.getOptions().stream()
-                .map(optionDto -> new Option(optionDto.getText(), optionDto.getIsCorrect()))
+                .map(optionDto -> new Option(optionDto.getOption(), optionDto.getIsCorrect()))
                 .collect(Collectors.toList());
 
         SingleChoiceTask singleChoiceTask = new SingleChoiceTask(course, dto.getStatement(), dto.getOrder(), options);
@@ -46,7 +46,7 @@ public class TaskService {
         Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
 
         List<Option> options = dto.getOptions().stream()
-                .map(optionDto -> new Option(optionDto.getText(), optionDto.getIsCorrect()))
+                .map(optionDto -> new Option(optionDto.getOption(), optionDto.getIsCorrect()))
                 .collect(Collectors.toList());
 
         MultipleChoiceTask multipleChoiceTask = new MultipleChoiceTask(course, dto.getStatement(), dto.getOrder(), options);
