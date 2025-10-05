@@ -73,7 +73,11 @@ public class TaskService {
         }
 
         if (taskRepository.existsByCourseIdAndOrder(course.getId(), order)) {
-            taskRepository.shiftOrdersForward(course.getId(), order);
+            List<Task> tasksToShift = taskRepository.findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(course.getId(), order);
+            for (Task task : tasksToShift) {
+                task.setOrder(task.getOrder() + 1);
+            }
+            taskRepository.saveAll(tasksToShift);
         }
 
         return course;

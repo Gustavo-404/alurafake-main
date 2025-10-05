@@ -1,0 +1,170 @@
+package br.com.alura.AluraFake.task;
+
+import br.com.alura.AluraFake.course.Course;
+import br.com.alura.AluraFake.course.CourseRepository;
+import br.com.alura.AluraFake.course.Status;
+import br.com.alura.AluraFake.user.User;
+import br.com.alura.AluraFake.util.exception.BusinessRuleException;
+import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class TaskServiceTest {
+
+    @Mock
+    private TaskRepository taskRepository;
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @InjectMocks
+    private TaskService taskService;
+
+    private Course course;
+    private User instructor;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        instructor = new User("Paulo", "paulo@alura.com.br", br.com.alura.AluraFake.user.Role.INSTRUCTOR);
+        course = new Course("Java", "Aprenda Java com Alura", instructor);
+    }
+
+    @Test
+    void createTask__should_save_task_without_reordering_when_order_is_free() {
+        Course spiedCourse = spy(course);
+        when(spiedCourse.getId()).thenReturn(1L);
+
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(1L);
+        dto.setStatement("New Task");
+        dto.setOrder(1);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(spiedCourse));
+        when(taskRepository.existsByCourseIdAndStatement(1L, "New Task")).thenReturn(false);
+        when(taskRepository.existsByCourseIdAndOrder(1L, 1)).thenReturn(false);
+        when(taskRepository.existsByCourseIdAndOrder(1L, 0)).thenReturn(false);
+
+        taskService.createTask(dto);
+
+        verify(taskRepository, never()).findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(anyLong(), anyInt());
+        verify(taskRepository, never()).saveAll(any());
+        verify(taskRepository).save(any(OpenTextTask.class));
+    }
+
+    @Test
+    void createTask__should_reorder_and_save_task_when_order_is_taken() {
+        Course spiedCourse = spy(course);
+        when(spiedCourse.getId()).thenReturn(1L);
+
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(1L);
+        dto.setStatement("Another Task");
+        dto.setOrder(1);
+
+        Task existingTask = new OpenTextTask(spiedCourse, "Existing Task", 1);
+        List<Task> tasksToShift = Collections.singletonList(existingTask);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(spiedCourse));
+        when(taskRepository.existsByCourseIdAndStatement(1L, "Another Task")).thenReturn(false);
+
+        when(taskRepository.existsByCourseIdAndOrder(1L, 1)).thenReturn(true);
+
+        when(taskRepository.existsByCourseIdAndOrder(1L, 0)).thenReturn(true);
+
+        when(taskRepository.findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(1L, 1)).thenReturn(tasksToShift);
+
+        taskService.createTask(dto);
+
+        verify(taskRepository).findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(1L, 1);
+
+        ArgumentCaptor<List<Task>> captor = ArgumentCaptor.forClass(List.class);
+        verify(taskRepository).saveAll(captor.capture());
+
+        List<Task> capturedTasks = captor.getValue();
+        assertEquals(1, capturedTasks.size());
+        assertEquals(2, capturedTasks.get(0).getOrder());
+
+        verify(taskRepository).save(any(OpenTextTask.class));
+    }
+
+
+    @Test
+    void createTask__should_throw_ResourceNotFoundException_when_course_does_not_exist() {
+        // Arrange
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(99L);
+
+        when(courseRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            taskService.createTask(dto);
+        }, "Curso não encontrado");
+    }
+
+    @Test
+    void createTask__should_throw_BusinessRuleException_when_course_is_not_building() {
+        // Arrange
+        course.setStatus(Status.PUBLISHED);
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(1L);
+        dto.setStatement("Statement");
+        dto.setOrder(1);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+
+        // Act & Assert
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            taskService.createTask(dto);
+        });
+        assertEquals("Só é possível adicionar atividades em cursos com status BUILDING", exception.getMessage());
+    }
+
+    @Test
+    void createTask__should_throw_BusinessRuleException_when_statement_already_exists() {
+        Course spiedCourse = spy(course);
+        when(spiedCourse.getId()).thenReturn(1L);
+
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(1L);
+        dto.setStatement("Existing Statement");
+        dto.setOrder(1);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(spiedCourse));
+        when(taskRepository.existsByCourseIdAndStatement(1L, "Existing Statement")).thenReturn(true);
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            taskService.createTask(dto);
+        });
+        assertEquals("O curso já possui uma atividade com este enunciado.", exception.getMessage());
+    }
+
+    @Test
+    void createTask__should_throw_BusinessRuleException_when_order_sequence_is_broken() {
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
+        dto.setCourseId(1L);
+        dto.setStatement("New Task");
+        dto.setOrder(3);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(taskRepository.existsByCourseIdAndStatement(1L, "New Task")).thenReturn(false);
+        when(taskRepository.existsByCourseIdAndOrder(1L, 2)).thenReturn(false);
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            taskService.createTask(dto);
+        });
+        assertEquals("A ordem das atividades deve ser contínua, sem saltos.", exception.getMessage());
+    }
+}

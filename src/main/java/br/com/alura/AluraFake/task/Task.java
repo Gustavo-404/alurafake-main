@@ -51,4 +51,24 @@ public abstract class Task {
     public Course getCourse() {
         return course;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setStatement(String statement) {
+        this.statement = statement;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
