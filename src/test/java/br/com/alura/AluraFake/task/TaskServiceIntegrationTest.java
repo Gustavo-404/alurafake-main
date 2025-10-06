@@ -8,6 +8,8 @@ import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static br.com.alura.AluraFake.user.Role.INSTRUCTOR;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +41,7 @@ class TaskServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        User instructor = new User("Test Instructor", "instructor@test.com", br.com.alura.AluraFake.user.Role.INSTRUCTOR);
+        User instructor = new User("Test Instructor", "instructor@test.com", INSTRUCTOR);
         userRepository.save(instructor);
         Course course = new Course("Integration Test Course", "Description", instructor);
         savedCourse = courseRepository.save(course);

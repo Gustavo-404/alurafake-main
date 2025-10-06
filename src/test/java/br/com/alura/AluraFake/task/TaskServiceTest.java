@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.alura.AluraFake.user.Role.INSTRUCTOR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -28,6 +29,9 @@ class TaskServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock
+    private TaskFactory taskFactory;
+
     @InjectMocks
     private TaskService taskService;
 
@@ -37,9 +41,10 @@ class TaskServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        instructor = new User("Paulo", "paulo@alura.com.br", br.com.alura.AluraFake.user.Role.INSTRUCTOR);
+        instructor = new User("Paulo", "paulo@alura.com.br", INSTRUCTOR);
         course = new Course("Java", "Aprenda Java com Alura", instructor);
     }
+
 
     @Test
     void createTask__should_save_task_without_reordering_when_order_is_free() {
@@ -55,6 +60,9 @@ class TaskServiceTest {
         when(taskRepository.existsByCourseIdAndStatement(1L, "New Task")).thenReturn(false);
         when(taskRepository.existsByCourseIdAndOrder(1L, 1)).thenReturn(false);
         when(taskRepository.existsByCourseIdAndOrder(1L, 0)).thenReturn(false);
+
+        OpenTextTask expectedTask = new OpenTextTask(spiedCourse, dto.getStatement(), dto.getOrder());
+        when(taskFactory.createTask(dto, spiedCourse)).thenReturn(expectedTask);
 
         taskService.createTask(dto);
 
@@ -78,12 +86,12 @@ class TaskServiceTest {
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(spiedCourse));
         when(taskRepository.existsByCourseIdAndStatement(1L, "Another Task")).thenReturn(false);
-
         when(taskRepository.existsByCourseIdAndOrder(1L, 1)).thenReturn(true);
-
         when(taskRepository.existsByCourseIdAndOrder(1L, 0)).thenReturn(true);
-
         when(taskRepository.findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(1L, 1)).thenReturn(tasksToShift);
+
+        OpenTextTask expectedTask = new OpenTextTask(spiedCourse, dto.getStatement(), dto.getOrder());
+        when(taskFactory.createTask(dto, spiedCourse)).thenReturn(expectedTask);
 
         taskService.createTask(dto);
 
@@ -98,6 +106,7 @@ class TaskServiceTest {
 
         verify(taskRepository).save(any(OpenTextTask.class));
     }
+
 
 
     @Test

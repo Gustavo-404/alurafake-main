@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
-public class NewSingleChoiceTaskDTO {
+public class NewSingleChoiceTaskDTO implements NewTaskDTO {
 
     @NotNull
     private Long courseId;

@@ -16,43 +16,19 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CourseRepository courseRepository;
+    private final TaskFactory taskFactory;
 
-    public TaskService(TaskRepository taskRepository, CourseRepository courseRepository) {
+    public TaskService(TaskRepository taskRepository, CourseRepository courseRepository, TaskFactory taskFactory) {
         this.taskRepository = taskRepository;
         this.courseRepository = courseRepository;
+        this.taskFactory = taskFactory;
     }
 
     @Transactional
-    public void createTask(NewOpenTextTaskDTO dto) {
+    public void createTask(NewTaskDTO dto) {
         Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
-        OpenTextTask openTextTask = new OpenTextTask(course, dto.getStatement(), dto.getOrder());
-        taskRepository.save(openTextTask);
-    }
-
-    @Transactional
-    public void createTask(NewSingleChoiceTaskDTO dto) {
-        Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
-
-        List<Option> options = dto.getOptions().stream()
-                .map(optionDto -> new Option(optionDto.getOption(), optionDto.getIsCorrect()))
-                .collect(Collectors.toList());
-
-        SingleChoiceTask singleChoiceTask = new SingleChoiceTask(course, dto.getStatement(), dto.getOrder(), options);
-
-        taskRepository.save(singleChoiceTask);
-    }
-
-    @Transactional
-    public void createTask(NewMultipleChoiceTaskDTO dto) {
-        Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
-
-        List<Option> options = dto.getOptions().stream()
-                .map(optionDto -> new Option(optionDto.getOption(), optionDto.getIsCorrect()))
-                .collect(Collectors.toList());
-
-        MultipleChoiceTask multipleChoiceTask = new MultipleChoiceTask(course, dto.getStatement(), dto.getOrder(), options);
-
-        taskRepository.save(multipleChoiceTask);
+        Task task = taskFactory.createTask(dto, course);
+        taskRepository.save(task);
     }
 
     private Course prepareTaskCreation(Long courseId, Integer order, String statement) {
@@ -68,7 +44,7 @@ public class TaskService {
         }
 
         boolean isOrderGreaterThanLast = !taskRepository.existsByCourseIdAndOrder(course.getId(), order - 1) && order > 1;
-        if(isOrderGreaterThanLast) {
+        if (isOrderGreaterThanLast) {
             throw new BusinessRuleException("A ordem das atividades deve ser contínua, sem saltos.");
         }
 
