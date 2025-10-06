@@ -5,9 +5,7 @@ import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "Task")
@@ -30,9 +28,8 @@ public class MultipleChoiceTask extends Task {
     }
 
     private void validateOptions(List<Option> options) {
-        if (options == null || options.isEmpty()) {
-            throw new BusinessRuleException("A lista de opções não pode ser vazia.");
-        }
+        TaskValidationUtils.validateCommonOptions(options, getStatement());
+
         if (options.size() < 3 || options.size() > 5) {
             throw new BusinessRuleException("A atividade deve ter entre 3 e 5 alternativas.");
         }
@@ -47,14 +44,5 @@ public class MultipleChoiceTask extends Task {
             throw new BusinessRuleException("A atividade de múltipla escolha deve ter ao menos uma alternativa incorreta.");
         }
 
-        Set<String> optionTexts = new HashSet<>();
-        for (Option option : options) {
-            if (option.getText().equalsIgnoreCase(getStatement())) {
-                throw new BusinessRuleException("A alternativa não pode ser igual ao enunciado.");
-            }
-            if (!optionTexts.add(option.getText())) {
-                throw new BusinessRuleException("As alternativas não podem ser iguais entre si.");
-            }
-        }
     }
 }

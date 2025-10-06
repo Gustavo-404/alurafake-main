@@ -30,9 +30,9 @@ public class SingleChoiceTask extends Task {
     }
 
     private void validateOptions(List<Option> options) {
-        if (options == null || options.isEmpty()) {
-            throw new BusinessRuleException("A lista de opções não pode ser vazia.");
-        }
+
+        TaskValidationUtils.validateCommonOptions(options, getStatement());
+
         if (options.size() < 2 || options.size() > 5) {
             throw new BusinessRuleException("A atividade deve ter entre 2 e 5 alternativas.");
         }
@@ -40,16 +40,6 @@ public class SingleChoiceTask extends Task {
         long correctOptionsCount = options.stream().filter(Option::isCorrect).count();
         if (correctOptionsCount != 1) {
             throw new BusinessRuleException("A atividade de alternativa única deve ter exatamente uma alternativa correta.");
-        }
-
-        Set<String> optionTexts = new HashSet<>();
-        for (Option option : options) {
-            if (option.getText().equalsIgnoreCase(getStatement())) {
-                throw new BusinessRuleException("A alternativa não pode ser igual ao enunciado.");
-            }
-            if (!optionTexts.add(option.getText())) {
-                throw new BusinessRuleException("As alternativas não podem ser iguais entre si.");
-            }
         }
     }
 }
