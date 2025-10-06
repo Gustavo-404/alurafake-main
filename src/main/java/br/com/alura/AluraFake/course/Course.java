@@ -66,7 +66,7 @@ public class Course {
         return publishedAt;
     }
 
-    void publish() {
+    public void publish() {
         this.status = Status.PUBLISHED;
         this.publishedAt = LocalDateTime.now();
     }
