@@ -26,6 +26,15 @@ public class NewMultipleChoiceTaskDTO {
     @Valid
     private List<NewOptionDTO> options;
 
+    public NewMultipleChoiceTaskDTO() { }
+
+    public NewMultipleChoiceTaskDTO(Long courseId, String statement, Integer order, List<NewOptionDTO> options) {
+        this.courseId = courseId;
+        this.statement = statement;
+        this.order = order;
+        this.options = options;
+    }
+
     public Long getCourseId() {
         return courseId;
     }

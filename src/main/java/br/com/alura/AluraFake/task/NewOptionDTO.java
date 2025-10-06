@@ -13,6 +13,14 @@ public class NewOptionDTO {
     @NotNull
     private Boolean isCorrect;
 
+
+    public NewOptionDTO() { }
+
+    public NewOptionDTO(String option, Boolean isCorrect) {
+        this.option = option;
+        this.isCorrect = isCorrect;
+    }
+
     public String getOption() {
         return option;
     }

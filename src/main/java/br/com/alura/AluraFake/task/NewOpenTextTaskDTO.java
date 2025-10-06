@@ -18,6 +18,14 @@ public class NewOpenTextTaskDTO {
     @Min(1)
     private Integer order;
 
+    public NewOpenTextTaskDTO() { }
+
+    public NewOpenTextTaskDTO(Long courseId, String statement, int order) {
+        this.courseId = courseId;
+        this.statement = statement;
+        this.order = order;
+    }
+
     public Long getCourseId() {
         return courseId;
     }
