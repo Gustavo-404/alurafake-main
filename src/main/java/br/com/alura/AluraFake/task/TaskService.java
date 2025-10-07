@@ -43,8 +43,8 @@ public class TaskService {
             throw new BusinessRuleException("O curso já possui uma atividade com este enunciado.");
         }
 
-        boolean isOrderGreaterThanLast = !taskRepository.existsByCourseIdAndOrder(course.getId(), order - 1) && order > 1;
-        if (isOrderGreaterThanLast) {
+        long totalTasks = taskRepository.countByCourseId(courseId);
+        if (order > totalTasks + 1) {
             throw new BusinessRuleException("A ordem das atividades deve ser contínua, sem saltos.");
         }
 

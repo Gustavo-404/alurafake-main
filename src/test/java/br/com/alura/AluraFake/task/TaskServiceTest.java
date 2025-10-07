@@ -111,13 +111,11 @@ class TaskServiceTest {
 
     @Test
     void createTask__should_throw_ResourceNotFoundException_when_course_does_not_exist() {
-        // Arrange
         NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
         dto.setCourseId(99L);
 
         when(courseRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> {
             taskService.createTask(dto);
         }, "Curso não encontrado");
@@ -125,7 +123,6 @@ class TaskServiceTest {
 
     @Test
     void createTask__should_throw_BusinessRuleException_when_course_is_not_building() {
-        // Arrange
         course.setStatus(Status.PUBLISHED);
         NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
         dto.setCourseId(1L);
@@ -134,7 +131,6 @@ class TaskServiceTest {
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
-        // Act & Assert
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
             taskService.createTask(dto);
         });
@@ -169,7 +165,8 @@ class TaskServiceTest {
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(taskRepository.existsByCourseIdAndStatement(1L, "New Task")).thenReturn(false);
-        when(taskRepository.existsByCourseIdAndOrder(1L, 2)).thenReturn(false);
+
+        when(taskRepository.countByCourseId(1L)).thenReturn(1L);
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
             taskService.createTask(dto);

@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
+    long countByCourseId(Long courseId);
+
     boolean existsByCourseIdAndOrder(Long courseId, Integer order);
 
     boolean existsByCourseIdAndStatement(Long courseId, String statement);
