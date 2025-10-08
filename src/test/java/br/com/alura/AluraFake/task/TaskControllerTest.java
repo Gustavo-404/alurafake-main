@@ -5,6 +5,7 @@ import br.com.alura.AluraFake.task.dto.NewMultipleChoiceTaskDTO;
 import br.com.alura.AluraFake.task.dto.NewOpenTextTaskDTO;
 import br.com.alura.AluraFake.task.dto.NewOptionDTO;
 import br.com.alura.AluraFake.task.dto.NewSingleChoiceTaskDTO;
+import br.com.alura.AluraFake.task.model.*;
 import br.com.alura.AluraFake.task.service.TaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,23 +40,27 @@ class TaskControllerTest {
 
     @Test
     void newOpenTextTask__should_return_created_when_request_is_valid() throws Exception {
-        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
-        dto.setCourseId(42L);
-        dto.setStatement("O que aprendemos na aula de hoje?");
-        dto.setOrder(1);
+        NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO(42L, "O que aprendemos na aula de hoje?", 1);
+        long instructorId = 1L;
 
-        doNothing().when(taskService).createTask(any(NewOpenTextTaskDTO.class), anyLong());
+        Task returnedTask = new OpenTextTask(null, dto.getStatement(), dto.getOrder());
+        returnedTask.setId(1L);
+
+        when(taskService.createTask(any(NewOpenTextTaskDTO.class), eq(instructorId)))
+                .thenReturn(returnedTask);
 
         mockMvc.perform(post("/task/new/opentext")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("scope", "INSTRUCTOR")
-                                .subject("1")
+                                .subject(String.valueOf(instructorId))
                         ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(returnedTask.getId()))
+                .andExpect(jsonPath("$.statement").value(dto.getStatement()));
 
-        verify(taskService).createTask(any(NewOpenTextTaskDTO.class),anyLong());
+        verify(taskService).createTask(any(NewOpenTextTaskDTO.class), eq(instructorId));
     }
 
     @Test
@@ -96,34 +100,40 @@ class TaskControllerTest {
 
     @Test
     void newSingleChoiceTask__should_return_created_when_request_is_valid() throws Exception {
-        NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
-        dto.setCourseId(42L);
-        dto.setStatement("O que aprendemos hoje?");
+        long instructorId = 1L;
 
-        dto.setOrder(2);
-        NewOptionDTO option1 = new NewOptionDTO();
-        option1.setOption("Java");
-        option1.setIsCorrect(true);
-        NewOptionDTO option2 = new NewOptionDTO();
-        option2.setOption("Python");
-        option2.setIsCorrect(false);
-        NewOptionDTO option3 = new NewOptionDTO();
-        option3.setOption("Ruby");
-        option3.setIsCorrect(false);
-        dto.setOptions(List.of(option1, option2, option3));
+        NewOptionDTO optionDto1 = new NewOptionDTO("Java", true);
+        NewOptionDTO optionDto2 = new NewOptionDTO("Python", false);
+        NewOptionDTO optionDto3 = new NewOptionDTO("Ruby", false);
 
-        doNothing().when(taskService).createTask(any(NewSingleChoiceTaskDTO.class),anyLong());
+        NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO(42L, "O que aprendemos hoje?", 2, List.of(optionDto1, optionDto2, optionDto3));
+
+        List<Option> options = List.of(
+                new Option("Java", true),
+                new Option("Python", false),
+                new Option("Ruby", false)
+        );
+        Task returnedTask = new SingleChoiceTask(null, dto.getStatement(), dto.getOrder(), options);
+        returnedTask.setId(3L);
+
+        when(taskService.createTask(any(NewSingleChoiceTaskDTO.class), eq(instructorId)))
+                .thenReturn(returnedTask);
 
         mockMvc.perform(post("/task/new/singlechoice")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("scope", "INSTRUCTOR")
-                                .subject("1")
+                                .subject(String.valueOf(instructorId))
                         ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated());
 
-        verify(taskService).createTask(any(NewSingleChoiceTaskDTO.class),anyLong());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(returnedTask.getId()))
+                .andExpect(jsonPath("$.options.length()").value(3))
+                .andExpect(jsonPath("$.options[0].text").value("Java"))
+                .andExpect(jsonPath("$.options[0].isCorrect").value(true));
+
+        verify(taskService).createTask(any(NewSingleChoiceTaskDTO.class), eq(instructorId));
     }
 
     @Test
@@ -153,37 +163,40 @@ class TaskControllerTest {
 
     @Test
     void newMultipleChoiceTask__should_return_created_when_request_is_valid() throws Exception {
-        NewMultipleChoiceTaskDTO dto = new NewMultipleChoiceTaskDTO();
-        dto.setCourseId(42L);
-        dto.setStatement("O que aprendemos hoje?");
-        dto.setOrder(2);
+        long instructorId = 1L;
 
-        NewOptionDTO option1 = new NewOptionDTO();
-        option1.setOption("Java");
-        option1.setIsCorrect(true);
+        NewOptionDTO optionDto1 = new NewOptionDTO("Java", true);
+        NewOptionDTO optionDto2 = new NewOptionDTO("Spring", true);
+        NewOptionDTO optionDto3 = new NewOptionDTO("Ruby", false);
 
-        NewOptionDTO option2 = new NewOptionDTO();
-        option2.setOption("Spring");
-        option2.setIsCorrect(true);
+        NewMultipleChoiceTaskDTO dto = new NewMultipleChoiceTaskDTO(42L, "O que aprendemos hoje?", 2, List.of(optionDto1, optionDto2, optionDto3));
 
-        NewOptionDTO option3 = new NewOptionDTO();
-        option3.setOption("Ruby");
-        option3.setIsCorrect(false);
+        List<Option> options = List.of(
+                new Option("Java", true),
+                new Option("Spring", true),
+                new Option("Ruby", false)
+        );
+        Task returnedTask = new MultipleChoiceTask(null, dto.getStatement(), dto.getOrder(), options);
+        returnedTask.setId(2L);
 
-        dto.setOptions(List.of(option1, option2, option3));
-
-        doNothing().when(taskService).createTask(any(NewMultipleChoiceTaskDTO.class),anyLong());
+        when(taskService.createTask(any(NewMultipleChoiceTaskDTO.class), eq(instructorId)))
+                .thenReturn(returnedTask);
 
         mockMvc.perform(post("/task/new/multiplechoice")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("scope", "INSTRUCTOR")
-                                .subject("1")
+                                .subject(String.valueOf(instructorId))
                         ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(returnedTask.getId()))
+                .andExpect(jsonPath("$.statement").value(dto.getStatement()))
+                .andExpect(jsonPath("$.options.length()").value(3))
+                .andExpect(jsonPath("$.options[0].text").value("Java"))
+                .andExpect(jsonPath("$.options[0].isCorrect").value(true));
 
-        verify(taskService).createTask(any(NewMultipleChoiceTaskDTO.class),anyLong());
+        verify(taskService).createTask(any(NewMultipleChoiceTaskDTO.class), eq(instructorId));
     }
 
 }

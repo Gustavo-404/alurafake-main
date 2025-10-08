@@ -51,7 +51,7 @@ class InstructorControllerTest {
         when(instructorService.generateReport(eq(instructorId), any(Pageable.class))).thenReturn(reportDTO);
 
         mockMvc.perform(get("/instructor/{id}/courses", instructorId)
-                        .with(jwt())) // Endpoint requer autenticação
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalPublishedCourses").value(1))
                 .andExpect(jsonPath("$.coursesPage.content[0].title").value("Java Completo"));

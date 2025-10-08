@@ -44,6 +44,13 @@ class CourseControllerTest {
         newCourseDto.setTitle("Curso de Spring Boot");
         newCourseDto.setDescription("Aprenda do zero");
 
+        Course createdCourse = new Course();
+        createdCourse.setId(123L);
+        createdCourse.setTitle(newCourseDto.getTitle());
+        createdCourse.setDescription(newCourseDto.getDescription());
+        when(courseService.createCourse(any(NewCourseDTO.class), eq(instructorId)))
+                .thenReturn(createdCourse);
+
         mockMvc.perform(post("/course/new")
                         .with(jwt().jwt(jwt -> jwt
                                 .claim("scope", "INSTRUCTOR")
@@ -52,7 +59,10 @@ class CourseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newCourseDto)))
 
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(createdCourse.getId()))
+                .andExpect(jsonPath("$.title").value("Curso de Spring Boot"));
+
         verify(courseService).createCourse(any(NewCourseDTO.class), eq(instructorId));
     }
 

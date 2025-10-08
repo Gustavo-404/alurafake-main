@@ -28,10 +28,10 @@ public class TaskService {
     }
 
     @Transactional
-    public void createTask(NewTaskDTO dto, long instructorId) {
+    public Task createTask(NewTaskDTO dto, long instructorId) {
         Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement(), instructorId);
         Task task = taskFactory.createTask(dto, course);
-        taskRepository.save(task);
+        return taskRepository.save(task);
     }
 
     private Course prepareTaskCreation(Long courseId, Integer order, String statement, long instructorId) {

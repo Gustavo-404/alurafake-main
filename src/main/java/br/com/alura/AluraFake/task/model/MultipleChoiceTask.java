@@ -16,6 +16,10 @@ public class MultipleChoiceTask extends Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Option> options = new ArrayList<>();
 
+    public List<Option> getOptions() {
+        return options;
+    }
+
     @Deprecated
     public MultipleChoiceTask() {}
 

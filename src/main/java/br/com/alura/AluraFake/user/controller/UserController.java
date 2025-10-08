@@ -1,5 +1,6 @@
 package br.com.alura.AluraFake.user.controller;
 
+import br.com.alura.AluraFake.user.dto.UserResponseDTO;
 import br.com.alura.AluraFake.user.model.User;
 import br.com.alura.AluraFake.user.repository.UserRepository;
 import br.com.alura.AluraFake.user.dto.NewUserDTO;
@@ -27,13 +28,14 @@ public class UserController {
 
     @Transactional
     @PostMapping("/user/new")
-    public ResponseEntity newUser(@RequestBody @Valid NewUserDTO newUser) {
+    public ResponseEntity<UserResponseDTO> newUser(@RequestBody @Valid NewUserDTO newUser) {
         if(userRepository.existsByEmail(newUser.getEmail())) {
             throw new BusinessRuleException("Email já cadastrado no sistema");
         }
         User user = newUser.toModelWithPassword(bCryptPasswordEncoder);
         userRepository.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        UserResponseDTO responseDto = new UserResponseDTO(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/user/all")

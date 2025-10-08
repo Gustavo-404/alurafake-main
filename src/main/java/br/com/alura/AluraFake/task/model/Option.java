@@ -29,6 +29,10 @@ public class Option {
         this.isCorrect = isCorrect;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     void setTask(Task task) {
         this.task = task;
     }

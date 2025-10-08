@@ -1,5 +1,7 @@
 package br.com.alura.AluraFake.course.controller;
 
+import br.com.alura.AluraFake.course.dto.NewCourseResponseDTO;
+import br.com.alura.AluraFake.course.model.Course;
 import br.com.alura.AluraFake.course.service.CourseService;
 import br.com.alura.AluraFake.course.dto.CourseListItemDTO;
 import br.com.alura.AluraFake.course.dto.NewCourseDTO;
@@ -26,9 +28,10 @@ public class CourseController {
     @Transactional
     @PreAuthorize("hasAuthority('SCOPE_INSTRUCTOR')")
     @PostMapping("/course/new")
-    public ResponseEntity createCourse(@Valid @RequestBody NewCourseDTO newCourse, JwtAuthenticationToken token) {
-        courseService.createCourse(newCourse, Long.parseLong(token.getName()));
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<NewCourseResponseDTO> createCourse(@Valid @RequestBody NewCourseDTO newCourse, JwtAuthenticationToken token) {
+        Course course = courseService.createCourse(newCourse, Long.parseLong(token.getName()));
+        NewCourseResponseDTO responseDto = new NewCourseResponseDTO(course);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/course/all")

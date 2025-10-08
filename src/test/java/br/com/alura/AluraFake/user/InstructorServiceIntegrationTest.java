@@ -54,7 +54,7 @@ class InstructorServiceIntegrationTest {
         c1.publish();
         courseRepository.save(c1);
 
-        Course c2 = courseRepository.save(new Course("Spring Boot", "...", instructor)); // Building
+        Course c2 = courseRepository.save(new Course("Spring Boot", "...", instructor));
 
         taskRepository.save(new OpenTextTask(c2, "Task 1 for Spring", 1));
         taskRepository.save(new OpenTextTask(c2, "Task 2 for Spring", 2));
