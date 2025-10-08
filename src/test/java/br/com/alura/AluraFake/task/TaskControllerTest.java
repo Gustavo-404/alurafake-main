@@ -13,8 +13,10 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,14 +40,18 @@ class TaskControllerTest {
         dto.setStatement("O que aprendemos na aula de hoje?");
         dto.setOrder(1);
 
-        doNothing().when(taskService).createTask(any(NewOpenTextTaskDTO.class));
+        doNothing().when(taskService).createTask(any(NewOpenTextTaskDTO.class), anyLong());
 
         mockMvc.perform(post("/task/new/opentext")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject("1")
+                        ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
-        verify(taskService).createTask(any(NewOpenTextTaskDTO.class));
+        verify(taskService).createTask(any(NewOpenTextTaskDTO.class),anyLong());
     }
 
     @Test
@@ -56,6 +62,7 @@ class TaskControllerTest {
         dto.setOrder(1);
 
         mockMvc.perform(post("/task/new/opentext")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -74,6 +81,7 @@ class TaskControllerTest {
         dto.setOrder(1);
 
         mockMvc.perform(post("/task/new/opentext")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -99,14 +107,18 @@ class TaskControllerTest {
         option3.setIsCorrect(false);
         dto.setOptions(List.of(option1, option2, option3));
 
-        doNothing().when(taskService).createTask(any(NewSingleChoiceTaskDTO.class));
+        doNothing().when(taskService).createTask(any(NewSingleChoiceTaskDTO.class),anyLong());
 
         mockMvc.perform(post("/task/new/singlechoice")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject("1")
+                        ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
-        verify(taskService).createTask(any(NewSingleChoiceTaskDTO.class));
+        verify(taskService).createTask(any(NewSingleChoiceTaskDTO.class),anyLong());
     }
 
     @Test
@@ -124,6 +136,7 @@ class TaskControllerTest {
         dto.setOptions(List.of(option1, option2));
 
         mockMvc.perform(post("/task/new/singlechoice")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -154,14 +167,18 @@ class TaskControllerTest {
 
         dto.setOptions(List.of(option1, option2, option3));
 
-        doNothing().when(taskService).createTask(any(NewMultipleChoiceTaskDTO.class));
+        doNothing().when(taskService).createTask(any(NewMultipleChoiceTaskDTO.class),anyLong());
 
         mockMvc.perform(post("/task/new/multiplechoice")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject("1")
+                        ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
-        verify(taskService).createTask(any(NewMultipleChoiceTaskDTO.class));
+        verify(taskService).createTask(any(NewMultipleChoiceTaskDTO.class),anyLong());
     }
 
 }

@@ -1,9 +1,9 @@
 package br.com.alura.AluraFake.user;
 
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
-import br.com.alura.AluraFake.util.exception.ErrorItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,17 +14,20 @@ public class UserController {
 
     private final UserRepository userRepository;
 
-    public UserController(UserRepository userRepository) {
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    public UserController(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Transactional
     @PostMapping("/user/new")
-    public ResponseEntity newStudent(@RequestBody @Valid NewUserDTO newUser) {
+    public ResponseEntity newUser(@RequestBody @Valid NewUserDTO newUser) {
         if(userRepository.existsByEmail(newUser.getEmail())) {
             throw new BusinessRuleException("Email já cadastrado no sistema");
         }
-        User user = newUser.toModel();
+        User user = newUser.toModelWithPassword(bCryptPasswordEncoder);
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

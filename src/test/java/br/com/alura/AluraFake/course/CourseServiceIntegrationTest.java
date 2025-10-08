@@ -17,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -55,7 +56,7 @@ class CourseServiceIntegrationTest {
     void publishCourse__should_publish_successfully_when_all_rules_are_met() {
         createSampleTasks();
 
-        courseService.publishCourse(course.getId());
+        courseService.publishCourse(course.getId(), instructor.getId());
 
         Course publishedCourse = courseRepository.findById(course.getId()).get();
         assertThat(publishedCourse.getStatus()).isEqualTo(Status.PUBLISHED);
@@ -69,18 +70,34 @@ class CourseServiceIntegrationTest {
         courseRepository.save(course);
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            courseService.publishCourse(course.getId());
+            courseService.publishCourse(course.getId(), instructor.getId());
         });
         assertEquals("O curso só pode ser publicado se o status for BUILDING.", exception.getMessage());
     }
 
     @Test
-    void publishCourse__should_throw_exception_when_a_task_type_is_missing() {
-        taskService.createTask(new NewOpenTextTaskDTO(course.getId(), "Open Text", 1));
-        taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))));
+    void publishCourse__should_throw_exception_when_instructor_tries_to_publish_activity_to_another_instructor_course() {
+        User instructor2 = new User("Test Instructor", "instructor2@test.com", Role.INSTRUCTOR);
+        userRepository.save(instructor2);
+        Course course2 = new Course("Test Course 2", "Description 2", instructor2);
+        courseRepository.save(course2);
+        taskService.createTask(new NewOpenTextTaskDTO(course2.getId(), "Open Text", 1), instructor2.getId());
+
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            courseService.publishCourse(course.getId());
+            taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))), instructor2.getId());
+            courseService.publishCourse(course.getId(), instructor.getId());
+        });
+        assertEquals("O instrutor só pode adicionar atividades aos próprios cursos.", exception.getMessage());
+    }
+
+    @Test
+    void publishCourse__should_throw_exception_when_a_task_type_is_missing() {
+        taskService.createTask(new NewOpenTextTaskDTO(course.getId(), "Open Text", 1), instructor.getId());
+        taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))), instructor.getId());
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            courseService.publishCourse(course.getId(), instructor.getId());
         });
         assertEquals("Para ser publicado, o curso deve conter ao menos uma atividade de cada tipo (Resposta Aberta, Alternativa Única e Múltipla Escolha).", exception.getMessage());
     }
@@ -92,7 +109,7 @@ class CourseServiceIntegrationTest {
         taskRepository.save(new MultipleChoiceTask(course, "Multiple Choice", 4, List.of(new Option("A", true), new Option("B", true), new Option("C", false))));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            courseService.publishCourse(course.getId());
+            courseService.publishCourse(course.getId(), instructor.getId());
         });
         assertEquals("As atividades do curso não estão em sequência contínua (ex: 1, 2, 3...).", exception.getMessage());
     }
@@ -100,14 +117,14 @@ class CourseServiceIntegrationTest {
     @Test
     void publishCourse__should_throw_exception_when_course_has_no_tasks() {
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            courseService.publishCourse(course.getId());
+            courseService.publishCourse(course.getId(), instructor.getId());
         });
         assertEquals("O curso deve ter ao menos uma atividade para ser publicado.", exception.getMessage());
     }
 
     private void createSampleTasks() {
-        taskService.createTask(new NewOpenTextTaskDTO(course.getId(), "Open Text", 1));
-        taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))));
-        taskService.createTask(new NewMultipleChoiceTaskDTO(course.getId(), "Multiple Choice", 3, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", true), new NewOptionDTO("C", false))));
+        taskService.createTask(new NewOpenTextTaskDTO(course.getId(), "Open Text", 1), instructor.getId());
+        taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))), instructor.getId());
+        taskService.createTask(new NewMultipleChoiceTaskDTO(course.getId(), "Multiple Choice", 3, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", true), new NewOptionDTO("C", false))), instructor.getId());
     }
 }

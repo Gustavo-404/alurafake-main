@@ -1,10 +1,10 @@
 package br.com.alura.AluraFake.course;
 
-import br.com.alura.AluraFake.user.*;
-import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +21,10 @@ public class CourseController {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('SCOPE_INSTRUCTOR')")
     @PostMapping("/course/new")
-    public ResponseEntity createCourse(@Valid @RequestBody NewCourseDTO newCourse) {
-        courseService.createCourse(newCourse);
+    public ResponseEntity createCourse(@Valid @RequestBody NewCourseDTO newCourse, JwtAuthenticationToken token) {
+        courseService.createCourse(newCourse, Long.parseLong(token.getName()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -33,8 +34,9 @@ public class CourseController {
     }
 
     @PostMapping("/course/{id}/publish")
-    public ResponseEntity publishCourse(@PathVariable("id") Long id) {
-        courseService.publishCourse(id);
+    @PreAuthorize("hasAuthority('SCOPE_INSTRUCTOR')")
+    public ResponseEntity publishCourse(@PathVariable("id") Long id, JwtAuthenticationToken token) {
+        courseService.publishCourse(id, Long.valueOf(token.getName()));
         return ResponseEntity.ok().build();
     }
 

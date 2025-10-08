@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,32 +34,38 @@ class CourseControllerTest {
 
     @Test
     void createCourse__should_return_created_when_request_is_valid() throws Exception {
-        NewCourseDTO newCourseDTO = new NewCourseDTO();
-        newCourseDTO.setTitle("Java");
-        newCourseDTO.setDescription("Curso de Java");
-        newCourseDTO.setEmailInstructor("paulo@alura.com.br");
-
-        when(courseService.createCourse(any(NewCourseDTO.class))).thenReturn(mock(Course.class));
+        long instructorId = 1L;
+        NewCourseDTO newCourseDto = new NewCourseDTO();
+        newCourseDto.setTitle("Curso de Spring Boot");
+        newCourseDto.setDescription("Aprenda do zero");
 
         mockMvc.perform(post("/course/new")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject(String.valueOf(instructorId))
+                        ))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCourseDTO)))
-                .andExpect(status().isCreated());
+                        .content(objectMapper.writeValueAsString(newCourseDto)))
 
-        verify(courseService).createCourse(any(NewCourseDTO.class));
+                .andExpect(status().isCreated());
+        verify(courseService).createCourse(any(NewCourseDTO.class), eq(instructorId));
     }
 
     @Test
     void createCourse__should_return_bad_request_when_service_throws_exception() throws Exception {
+        long instructorId = 1L;
         NewCourseDTO newCourseDTO = new NewCourseDTO();
         newCourseDTO.setTitle("Java");
         newCourseDTO.setDescription("Curso de Java");
-        newCourseDTO.setEmailInstructor("invalid@alura.com.br");
 
         doThrow(new BusinessRuleException("Usuário não encontrado ou não é um instrutor"))
-                .when(courseService).createCourse(any(NewCourseDTO.class));
+                .when(courseService).createCourse(any(NewCourseDTO.class), anyLong());
 
         mockMvc.perform(post("/course/new")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject(String.valueOf(instructorId))
+                        ))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newCourseDTO)))
                 .andExpect(status().isBadRequest())
@@ -76,6 +83,7 @@ class CourseControllerTest {
         when(courseService.findAllCourses()).thenReturn(courseList);
 
         mockMvc.perform(get("/course/all")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Java"))
@@ -84,11 +92,15 @@ class CourseControllerTest {
 
     @Test
     void publishCourse__should_return_ok_when_request_is_valid() throws Exception {
-        doNothing().when(courseService).publishCourse(anyLong());
+        doNothing().when(courseService).publishCourse(42L,1L);
 
-        mockMvc.perform(post("/course/42/publish"))
+        mockMvc.perform(post("/course/42/publish")
+                        .with(jwt().jwt(jwt -> jwt
+                                .claim("scope", "INSTRUCTOR")
+                                .subject("1")
+                        ))              )
                 .andExpect(status().isOk());
 
-        verify(courseService).publishCourse(42L);
+        verify(courseService).publishCourse(42L, 1L);
     }
 }

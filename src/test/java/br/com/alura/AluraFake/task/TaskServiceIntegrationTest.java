@@ -2,6 +2,7 @@ package br.com.alura.AluraFake.task;
 
 import br.com.alura.AluraFake.course.Course;
 import br.com.alura.AluraFake.course.CourseRepository;
+import br.com.alura.AluraFake.user.Role;
 import br.com.alura.AluraFake.user.User;
 import br.com.alura.AluraFake.user.UserRepository;
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import static br.com.alura.AluraFake.user.Role.INSTRUCTOR;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -37,14 +40,15 @@ class TaskServiceIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private Course savedCourse;
+    private Course course;
+    private User instructor;
 
     @BeforeEach
     void setUp() {
-        User instructor = new User("Test Instructor", "instructor@test.com", INSTRUCTOR);
+        instructor = new User("Test Instructor", "instructor@test.com", INSTRUCTOR);
         userRepository.save(instructor);
-        Course course = new Course("Integration Test Course", "Description", instructor);
-        savedCourse = courseRepository.save(course);
+        course = new Course("Integration Test Course", "Description", instructor);
+        courseRepository.save(course);
     }
 
     @AfterEach
@@ -57,12 +61,12 @@ class TaskServiceIntegrationTest {
     @Test
     void createAllTaskTypes__should_save_all_three_task_types_successfully() {
         NewOpenTextTaskDTO openTextDto = new NewOpenTextTaskDTO();
-        openTextDto.setCourseId(savedCourse.getId());
+        openTextDto.setCourseId(course.getId());
         openTextDto.setStatement("First task: Open Text");
         openTextDto.setOrder(1);
 
         NewSingleChoiceTaskDTO singleChoiceDto = new NewSingleChoiceTaskDTO();
-        singleChoiceDto.setCourseId(savedCourse.getId());
+        singleChoiceDto.setCourseId(course.getId());
         singleChoiceDto.setStatement("Second task: Single Choice");
         singleChoiceDto.setOrder(2);
         NewOptionDTO scOption1 = new NewOptionDTO();
@@ -74,7 +78,7 @@ class TaskServiceIntegrationTest {
         singleChoiceDto.setOptions(List.of(scOption1, scOption2));
 
         NewMultipleChoiceTaskDTO multipleChoiceDto = new NewMultipleChoiceTaskDTO();
-        multipleChoiceDto.setCourseId(savedCourse.getId());
+        multipleChoiceDto.setCourseId(course.getId());
         multipleChoiceDto.setStatement("Third task: Multiple Choice");
         multipleChoiceDto.setOrder(3);
         NewOptionDTO mcOption1 = new NewOptionDTO();
@@ -88,9 +92,9 @@ class TaskServiceIntegrationTest {
         mcOption3.setIsCorrect(false);
         multipleChoiceDto.setOptions(List.of(mcOption1, mcOption2, mcOption3));
 
-        taskService.createTask(openTextDto);
-        taskService.createTask(singleChoiceDto);
-        taskService.createTask(multipleChoiceDto);
+        taskService.createTask(openTextDto, instructor.getId());
+        taskService.createTask(singleChoiceDto, instructor.getId());
+        taskService.createTask(multipleChoiceDto, instructor.getId());
 
         List<Task> tasks = taskRepository.findAll();
 
@@ -103,7 +107,7 @@ class TaskServiceIntegrationTest {
     @Test
     void createTask__should_throw_BusinessRuleException_when_single_choice_has_two_correct_options() {
         NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
-        dto.setCourseId(savedCourse.getId());
+        dto.setCourseId(course.getId());
         dto.setStatement("Statement");
         dto.setOrder(1);
 
@@ -116,7 +120,7 @@ class TaskServiceIntegrationTest {
         dto.setOptions(List.of(option1, option2));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructor.getId());
         });
 
         assertEquals("A atividade de alternativa única deve ter exatamente uma alternativa correta.", exception.getMessage());
@@ -125,7 +129,7 @@ class TaskServiceIntegrationTest {
     @Test
     void createTask__should_throw_BusinessRuleException_when_options_are_duplicated() {
         NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
-        dto.setCourseId(savedCourse.getId());
+        dto.setCourseId(course.getId());
         dto.setStatement("Statement");
         dto.setOrder(1);
 
@@ -138,7 +142,7 @@ class TaskServiceIntegrationTest {
         dto.setOptions(List.of(option1, option2));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructor.getId());
         });
 
         assertEquals("As alternativas não podem ser iguais entre si.", exception.getMessage());
@@ -147,7 +151,7 @@ class TaskServiceIntegrationTest {
     @Test
     void createTask__should_throw_BusinessRuleException_when_option_equals_statement() {
         NewSingleChoiceTaskDTO dto = new NewSingleChoiceTaskDTO();
-        dto.setCourseId(savedCourse.getId());
+        dto.setCourseId(course.getId());
         dto.setStatement("Statement");
         dto.setOrder(1);
 
@@ -160,7 +164,7 @@ class TaskServiceIntegrationTest {
         dto.setOptions(List.of(option1, option2));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructor.getId());
         });
 
         assertEquals("A alternativa não pode ser igual ao enunciado.", exception.getMessage());
@@ -169,7 +173,7 @@ class TaskServiceIntegrationTest {
     @Test
     void createTask__should_throw_BusinessRuleException_when_multiple_choice_has_no_incorrect_option() {
         NewMultipleChoiceTaskDTO dto = new NewMultipleChoiceTaskDTO();
-        dto.setCourseId(savedCourse.getId());
+        dto.setCourseId(course.getId());
         dto.setStatement("Statement");
         dto.setOrder(1);
 
@@ -185,7 +189,7 @@ class TaskServiceIntegrationTest {
         dto.setOptions(List.of(option1, option2, option3));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructor.getId());
         });
 
         assertEquals("A atividade de múltipla escolha deve ter ao menos uma alternativa incorreta.", exception.getMessage());
@@ -193,15 +197,15 @@ class TaskServiceIntegrationTest {
 
     @Test
     void createTask__should_reorder_tasks_when_inserting_in_the_middle() {
-        taskService.createTask(createOpenTextDto("Task A", 1));
-        taskService.createTask(createOpenTextDto("Task B", 2));
-        taskService.createTask(createOpenTextDto("Task C", 3));
+        taskService.createTask(createOpenTextDto("Task A", 1), instructor.getId());
+        taskService.createTask(createOpenTextDto("Task B", 2), instructor.getId());
+        taskService.createTask(createOpenTextDto("Task C", 3), instructor.getId());
 
         NewOpenTextTaskDTO newTaskDto = createOpenTextDto("New Task at 2", 2);
 
-        taskService.createTask(newTaskDto);
+        taskService.createTask(newTaskDto, instructor.getId());
 
-        List<Task> tasks = taskRepository.findAllByCourseIdOrderByOrderAsc(savedCourse.getId());
+        List<Task> tasks = taskRepository.findAllByCourseIdOrderByOrderAsc(course.getId());
 
         assertThat(tasks).hasSize(4);
         assertThat(tasks.get(0).getStatement()).isEqualTo("Task A");
@@ -219,20 +223,36 @@ class TaskServiceIntegrationTest {
 
     @Test
     void createTask__should_throw_BusinessRuleException_when_order_sequence_is_broken() {
-        taskService.createTask(createOpenTextDto("Task A", 1));
-        taskService.createTask(createOpenTextDto("Task B", 2));
+        taskService.createTask(createOpenTextDto("Task A", 1), instructor.getId());
+        taskService.createTask(createOpenTextDto("Task B", 2), instructor.getId());
 
         NewOpenTextTaskDTO invalidTaskDto = createOpenTextDto("Invalid Task", 4);
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(invalidTaskDto);
+            taskService.createTask(invalidTaskDto, instructor.getId());
         });
 
         assertEquals("A ordem das atividades deve ser contínua, sem saltos.", exception.getMessage());
     }
+
+    @Test
+    void publishCourse__should_throw_exception_when_instructor_tries_to_publish_activity_to_another_instructor_course() {
+        User instructor2 = new User("Test Instructor", "instructor2@test.com", Role.INSTRUCTOR);
+        userRepository.save(instructor2);
+        Course course2 = new Course("Test Course 2", "Description 2", instructor2);
+        courseRepository.save(course2);
+        taskService.createTask(new NewOpenTextTaskDTO(course2.getId(), "Open Text", 1), instructor2.getId());
+
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            taskService.createTask(new NewSingleChoiceTaskDTO(course.getId(), "Single Choice", 2, List.of(new NewOptionDTO("A", true), new NewOptionDTO("B", false))), instructor2.getId());
+        });
+        assertEquals("O instrutor só pode adicionar atividades aos próprios cursos.", exception.getMessage());
+    }
+
     private NewOpenTextTaskDTO createOpenTextDto(String statement, int order) {
         NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
-        dto.setCourseId(savedCourse.getId());
+        dto.setCourseId(course.getId());
         dto.setStatement(statement);
         dto.setOrder(order);
         return dto;

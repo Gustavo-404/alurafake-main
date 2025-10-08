@@ -5,6 +5,7 @@ import br.com.alura.AluraFake.task.*;
 import br.com.alura.AluraFake.user.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -19,11 +20,13 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final TaskRepository taskRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public DataSeeder(UserRepository userRepository, CourseRepository courseRepository, TaskRepository taskRepository) {
+    public DataSeeder(UserRepository userRepository, CourseRepository courseRepository, TaskRepository taskRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.taskRepository = taskRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
@@ -34,11 +37,11 @@ public class DataSeeder implements CommandLineRunner {
 
         System.out.println("Populando banco de dados de desenvolvimento...");
 
-        User ana = new User("Ana", "ana@alura.com.br", Role.INSTRUCTOR);
-        User paulo = new User("Paulo", "paulo@alura.com.br", Role.INSTRUCTOR);
-        User thiago = new User("Thiago", "thiago@alura.com.br", Role.INSTRUCTOR); // Instrutor sem cursos
-        User caio = new User("Caio", "caio@alura.com.br", Role.STUDENT);
-        User maria = new User("Maria", "maria@alura.com.br", Role.STUDENT);
+        User ana = new User("Ana", "ana@alura.com.br", Role.INSTRUCTOR, bCryptPasswordEncoder.encode("123456"));
+        User paulo = new User("Paulo", "paulo@alura.com.br", Role.INSTRUCTOR, bCryptPasswordEncoder.encode("123456"));
+        User thiago = new User("Thiago", "thiago@alura.com.br", Role.INSTRUCTOR, bCryptPasswordEncoder.encode("123456"));
+        User caio = new User("Caio", "caio@alura.com.br", Role.STUDENT, bCryptPasswordEncoder.encode("123456"));
+        User maria = new User("Maria", "maria@alura.com.br", Role.STUDENT, bCryptPasswordEncoder.encode("123456"));
         userRepository.saveAll(Arrays.asList(ana, paulo, thiago, caio, maria));
 
         Course javaCourse = new Course("Java Completo", "Aprenda Java do zero ao avançado", ana);

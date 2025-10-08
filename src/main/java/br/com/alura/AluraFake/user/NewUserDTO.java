@@ -2,6 +2,7 @@ package br.com.alura.AluraFake.user;
 
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class NewUserDTO {
 
@@ -13,10 +14,12 @@ public class NewUserDTO {
     private String email;
     @NotNull
     private Role role;
-    @Pattern(regexp = "^$|^.{6}$", message = "Password must be exactly 6 characters long if provided")
+    @NotBlank
+    @Pattern(regexp = "^.{6}$", message = "A senha deve ter exatamente 6 caracteres")
     private String password;
 
-    public NewUserDTO() {}
+    public NewUserDTO() {
+    }
 
     public String getName() {
         return name;
@@ -52,6 +55,10 @@ public class NewUserDTO {
 
     public User toModel() {
         return new User(name, email, role);
+    }
+
+    public User toModelWithPassword(PasswordEncoder passwordEncoder) {
+        return new User(name, email, role, passwordEncoder.encode(password));
     }
 
 }

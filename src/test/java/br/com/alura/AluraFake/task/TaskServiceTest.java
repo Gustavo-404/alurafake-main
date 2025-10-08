@@ -38,10 +38,13 @@ class TaskServiceTest {
     private Course course;
     private User instructor;
 
+    private Long instructorId = 1L;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        instructor = new User("Paulo", "paulo@alura.com.br", INSTRUCTOR);
+        instructor = spy(new User("Paulo", "paulo@alura.com.br", INSTRUCTOR));
+        when(instructor.getId()).thenReturn(instructorId);
         course = new Course("Java", "Aprenda Java com Alura", instructor);
     }
 
@@ -64,9 +67,9 @@ class TaskServiceTest {
         OpenTextTask expectedTask = new OpenTextTask(spiedCourse, dto.getStatement(), dto.getOrder());
         when(taskFactory.createTask(dto, spiedCourse)).thenReturn(expectedTask);
 
-        taskService.createTask(dto);
+        taskService.createTask(dto, instructorId);
 
-        verify(taskRepository, never()).findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(anyLong(), anyInt());
+        verify(taskRepository, never()).findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(eq(instructorId), anyInt());
         verify(taskRepository, never()).saveAll(any());
         verify(taskRepository).save(any(OpenTextTask.class));
     }
@@ -92,8 +95,7 @@ class TaskServiceTest {
 
         OpenTextTask expectedTask = new OpenTextTask(spiedCourse, dto.getStatement(), dto.getOrder());
         when(taskFactory.createTask(dto, spiedCourse)).thenReturn(expectedTask);
-
-        taskService.createTask(dto);
+        taskService.createTask(dto, instructorId);
 
         verify(taskRepository).findAllByCourseIdAndOrderGreaterThanEqualOrderByOrderDesc(1L, 1);
 
@@ -108,7 +110,6 @@ class TaskServiceTest {
     }
 
 
-
     @Test
     void createTask__should_throw_ResourceNotFoundException_when_course_does_not_exist() {
         NewOpenTextTaskDTO dto = new NewOpenTextTaskDTO();
@@ -117,7 +118,7 @@ class TaskServiceTest {
         when(courseRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructorId);
         }, "Curso não encontrado");
     }
 
@@ -132,7 +133,7 @@ class TaskServiceTest {
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructorId);
         });
         assertEquals("Só é possível adicionar atividades em cursos com status BUILDING", exception.getMessage());
     }
@@ -151,7 +152,7 @@ class TaskServiceTest {
         when(taskRepository.existsByCourseIdAndStatement(1L, "Existing Statement")).thenReturn(true);
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructorId);
         });
         assertEquals("O curso já possui uma atividade com este enunciado.", exception.getMessage());
     }
@@ -169,7 +170,7 @@ class TaskServiceTest {
         when(taskRepository.countByCourseId(1L)).thenReturn(1L);
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
-            taskService.createTask(dto);
+            taskService.createTask(dto, instructorId);
         });
         assertEquals("A ordem das atividades deve ser contínua, sem saltos.", exception.getMessage());
     }

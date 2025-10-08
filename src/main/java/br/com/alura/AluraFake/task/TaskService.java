@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,15 +26,19 @@ public class TaskService {
     }
 
     @Transactional
-    public void createTask(NewTaskDTO dto) {
-        Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement());
+    public void createTask(NewTaskDTO dto, long instructorId) {
+        Course course = prepareTaskCreation(dto.getCourseId(), dto.getOrder(), dto.getStatement(), instructorId);
         Task task = taskFactory.createTask(dto, course);
         taskRepository.save(task);
     }
 
-    private Course prepareTaskCreation(Long courseId, Integer order, String statement) {
+    private Course prepareTaskCreation(Long courseId, Integer order, String statement, long instructorId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Curso não encontrado"));
+
+        if (!Objects.equals(instructorId, course.getInstructor().getId())) {
+            throw new BusinessRuleException("O instrutor só pode adicionar atividades aos próprios cursos.");
+        }
 
         if (course.getStatus() != Status.BUILDING) {
             throw new BusinessRuleException("Só é possível adicionar atividades em cursos com status BUILDING");

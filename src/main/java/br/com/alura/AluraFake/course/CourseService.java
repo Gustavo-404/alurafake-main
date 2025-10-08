@@ -26,12 +26,12 @@ public class CourseService {
     }
 
     @Transactional
-    public Course createCourse(NewCourseDTO newCourse) {
+    public Course createCourse(NewCourseDTO newCourse, long instructorId) {
+
         User instructor = userRepository
-                .findByEmail(newCourse.getEmailInstructor())
+                .findById(instructorId)
                 .filter(User::isInstructor)
                 .orElseThrow(() -> new BusinessRuleException("Usuário não encontrado ou não é um instrutor"));
-
         Course course = new Course(newCourse.getTitle(), newCourse.getDescription(), instructor);
         return courseRepository.save(course);
     }
@@ -43,13 +43,13 @@ public class CourseService {
     }
 
     @Transactional
-    public void publishCourse(Long courseId) {
+    public void publishCourse(Long courseId, Long instructorId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Curso não encontrado"));
 
         List<Task> tasks = taskRepository.findAllByCourseIdOrderByOrderAsc(courseId);
 
-        course.prepareToPublish(tasks);
+        course.prepareToPublish(tasks, instructorId);
 
         courseRepository.save(course);
     }

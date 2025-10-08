@@ -1,7 +1,9 @@
 package br.com.alura.AluraFake.user;
 
+import br.com.alura.AluraFake.auth.LoginRequestDTO;
 import br.com.alura.AluraFake.util.PasswordGeneration;
 import jakarta.persistence.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +18,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     private String email;
-    // Por questões didáticas, a senha será armazenada em texto plano.
     private String password;
 
     @Deprecated
@@ -57,5 +58,17 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isLoginCorrect(LoginRequestDTO loginRequestDTO, PasswordEncoder passwordEncoder){
+        return passwordEncoder.matches(loginRequestDTO.password(), this.password);
     }
 }

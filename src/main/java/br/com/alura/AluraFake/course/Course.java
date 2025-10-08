@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -78,12 +79,10 @@ public class Course {
         this.publishedAt = LocalDateTime.now();
     }
 
-    /**
-     * Valida todas as regras de negócio antes de publicar um curso.
-     * Se todas as regras passarem, o curso é publicado.
-     * @param tasks A lista de tarefas associadas ao curso.
-     */
-    public void prepareToPublish(List<Task> tasks) {
+    public void prepareToPublish(List<Task> tasks, Long instructorId) {
+        if (!Objects.equals(instructorId, this.instructor.getId())) {
+            throw new BusinessRuleException("O instrutor só pode publicar seus próprios cursos.");
+        }
         if (this.status != Status.BUILDING) {
             throw new BusinessRuleException("O curso só pode ser publicado se o status for BUILDING.");
         }
@@ -92,8 +91,6 @@ public class Course {
         }
         validateTaskTypes(tasks);
         validateTaskOrderSequence(tasks);
-
-        // Se tudo estiver certo, publica
         this.publish();
     }
 
