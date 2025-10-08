@@ -1,8 +1,14 @@
 package br.com.alura.AluraFake.user;
 
-import br.com.alura.AluraFake.course.*;
-import br.com.alura.AluraFake.task.OpenTextTask;
-import br.com.alura.AluraFake.task.TaskRepository;
+import br.com.alura.AluraFake.course.enums.Status;
+import br.com.alura.AluraFake.course.model.Course;
+import br.com.alura.AluraFake.course.repository.CourseRepository;
+import br.com.alura.AluraFake.task.model.OpenTextTask;
+import br.com.alura.AluraFake.task.repository.TaskRepository;
+import br.com.alura.AluraFake.user.enums.Role;
+import br.com.alura.AluraFake.user.model.User;
+import br.com.alura.AluraFake.user.repository.UserRepository;
+import br.com.alura.AluraFake.user.service.InstructorService;
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.AfterEach;

@@ -1,7 +1,12 @@
 package br.com.alura.AluraFake.course;
 
-import br.com.alura.AluraFake.user.Role;
-import br.com.alura.AluraFake.user.User;
+import br.com.alura.AluraFake.course.controller.CourseController;
+import br.com.alura.AluraFake.course.dto.CourseListItemDTO;
+import br.com.alura.AluraFake.course.dto.NewCourseDTO;
+import br.com.alura.AluraFake.course.model.Course;
+import br.com.alura.AluraFake.course.service.CourseService;
+import br.com.alura.AluraFake.user.enums.Role;
+import br.com.alura.AluraFake.user.model.User;
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

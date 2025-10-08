@@ -1,9 +1,15 @@
 package br.com.alura.AluraFake.task;
 
-import br.com.alura.AluraFake.course.Course;
-import br.com.alura.AluraFake.course.CourseRepository;
-import br.com.alura.AluraFake.course.Status;
-import br.com.alura.AluraFake.user.User;
+import br.com.alura.AluraFake.course.model.Course;
+import br.com.alura.AluraFake.course.repository.CourseRepository;
+import br.com.alura.AluraFake.course.enums.Status;
+import br.com.alura.AluraFake.task.dto.NewOpenTextTaskDTO;
+import br.com.alura.AluraFake.task.model.OpenTextTask;
+import br.com.alura.AluraFake.task.model.Task;
+import br.com.alura.AluraFake.task.repository.TaskRepository;
+import br.com.alura.AluraFake.task.service.TaskFactory;
+import br.com.alura.AluraFake.task.service.TaskService;
+import br.com.alura.AluraFake.user.model.User;
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.alura.AluraFake.user.Role.INSTRUCTOR;
+import static br.com.alura.AluraFake.user.enums.Role.INSTRUCTOR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

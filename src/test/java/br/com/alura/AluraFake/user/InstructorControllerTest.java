@@ -1,8 +1,10 @@
 package br.com.alura.AluraFake.user;
 
-import br.com.alura.AluraFake.course.CourseReportItemDTO;
-import br.com.alura.AluraFake.course.InstructorReportDTO;
-import br.com.alura.AluraFake.course.Status;
+import br.com.alura.AluraFake.course.dto.CourseReportItemDTO;
+import br.com.alura.AluraFake.course.dto.InstructorReportDTO;
+import br.com.alura.AluraFake.course.enums.Status;
+import br.com.alura.AluraFake.user.controller.InstructorController;
+import br.com.alura.AluraFake.user.service.InstructorService;
 import br.com.alura.AluraFake.util.exception.BusinessRuleException;
 import br.com.alura.AluraFake.util.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
